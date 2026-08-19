@@ -1,0 +1,37 @@
+name: Get Marketplace identity ID
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  identity:
+    name: Resolve Marketplace identity
+    environment: marketplace
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Sign in to Azure
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
+      - name: Show Marketplace identity ID
+        shell: bash
+        run: |
+          marketplace_resource="499b84ac-1321-427f-aa17-267ca6975798"
+          profile_url="https://app.vssps.visualstudio.com/_apis/profile/profiles/me"
+
+          profile_id="$(az rest \
+            --method get \
+            --url "${profile_url}" \
+            --resource "${marketplace_resource}" \
+            --query id \
+            --output tsv)"
+
+          echo "::notice title=Marketplace identity ID::${profile_id}"

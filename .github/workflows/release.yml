@@ -3,14 +3,16 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   release:
     name: Build and release VSIX
+    environment: marketplace
     runs-on: ubuntu-latest
 
     steps:
@@ -49,7 +51,26 @@ jobs:
           package_version="${GITHUB_REF_NAME#v}"
           vsix_file="otf-hammer-origin-formatter-${package_version}.vsix"
 
-          pnpm exec vsce package --out "${vsix_file}"
+          pnpm exec vsce package \
+            --no-dependencies \
+            --out "${vsix_file}"
+
+      - name: Sign in to Azure
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
+      - name: Publish to Visual Studio Marketplace
+        shell: bash
+        run: |
+          package_version="${GITHUB_REF_NAME#v}"
+          vsix_file="otf-hammer-origin-formatter-${package_version}.vsix"
+
+          pnpm exec vsce publish \
+            --azure-credential \
+            --packagePath "${vsix_file}"
 
       - name: Create GitHub release
         env:

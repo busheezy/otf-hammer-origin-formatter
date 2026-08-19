@@ -3,7 +3,7 @@
   "displayName": "OTF Hammer Origin Formatter",
   "description": "Formats Hammer origin values when pasted into .vsndevts files.",
   "version": "0.0.1",
-  "publisher": "local",
+  "publisher": "busheezy",
   "engines": {
     "vscode": "^1.101.0"
   },
