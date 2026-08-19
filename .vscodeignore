@@ -1,0 +1,7 @@
+.agents/
+.codex/
+.vscode/
+src/
+.gitignore
+tsconfig.json
+*.vsix

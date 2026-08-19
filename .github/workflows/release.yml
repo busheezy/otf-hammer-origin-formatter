@@ -1,0 +1,62 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and release VSIX
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Set extension version from tag
+        shell: bash
+        run: |
+          package_version="${GITHUB_REF_NAME#v}"
+
+          pnpm version "${package_version}" --no-git-tag-version
+
+      - name: Compile extension
+        run: pnpm run compile
+
+      - name: Package extension
+        shell: bash
+        run: |
+          package_version="${GITHUB_REF_NAME#v}"
+          vsix_file="otf-hammer-origin-formatter-${package_version}.vsix"
+
+          pnpm exec vsce package --out "${vsix_file}"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          package_version="${GITHUB_REF_NAME#v}"
+          vsix_file="otf-hammer-origin-formatter-${package_version}.vsix"
+
+          gh release create "${GITHUB_REF_NAME}" "${vsix_file}" \
+            --generate-notes \
+            --title "${GITHUB_REF_NAME}"
