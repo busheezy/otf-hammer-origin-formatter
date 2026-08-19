@@ -36,7 +36,9 @@ jobs:
         run: |
           package_version="${GITHUB_REF_NAME#v}"
 
-          pnpm version "${package_version}" --no-git-tag-version
+          pnpm version "${package_version}" \
+            --no-git-tag-version \
+            --allow-same-version
 
       - name: Compile extension
         run: pnpm run compile
