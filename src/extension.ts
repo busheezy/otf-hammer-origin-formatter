@@ -6,45 +6,29 @@ const originPasteEditKind = vscode.DocumentDropOrPasteEditKind.Text.append(
     'otfHammerOrigin'
 );
 
-const originPattern = /\{\s*origin\s*=\s*"([^"\r\n]+)"\s*\}/g;
+const coordinatePattern = '-?(?:0|[1-9]\\d*)(?:\\.\\d+)?';
 
-function formatOrigins(text: string): string | undefined
+const originPattern = new RegExp(
+    `^\\{ origin = "(${coordinatePattern}) ` +
+    `(${coordinatePattern}) (${coordinatePattern})" \\}$`
+);
+
+function formatOrigin(text: string): string | undefined
 {
-    let didFormatOrigin = false;
+    const match = originPattern.exec(text);
 
-    const formattedText = text.replace(
-        originPattern,
-        (match: string, coordinates: string) =>
-        {
-            const values = coordinates.trim().split(/\s+/);
-
-            if (values.length !== 3)
-            {
-                return match;
-            }
-
-            const containsInvalidValue = values.some((value: string) =>
-            {
-                return !Number.isFinite(Number(value));
-            });
-
-            if (containsInvalidValue)
-            {
-                return match;
-            }
-
-            didFormatOrigin = true;
-
-            return `[ ${values.join(', ')} ]`;
-        }
-    );
-
-    if (!didFormatOrigin)
+    if (!match)
     {
         return undefined;
     }
 
-    return formattedText;
+    const x = match[1];
+    const y = match[2];
+    const z = match[3];
+
+    const values = [x, y, z];
+
+    return `[ ${values.join(', ')} ]`;
 }
 
 class OriginPasteEditProvider implements vscode.DocumentPasteEditProvider
@@ -71,7 +55,7 @@ class OriginPasteEditProvider implements vscode.DocumentPasteEditProvider
             return undefined;
         }
 
-        const formattedText = formatOrigins(clipboardText);
+        const formattedText = formatOrigin(clipboardText);
 
         if (!formattedText)
         {

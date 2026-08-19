@@ -14,9 +14,10 @@ inserts:
 [ 115.447, 414.053, 96 ]
 ```
 
-Pasted text that does not contain a valid origin object is left unchanged. The
-formatter accepts any three finite numeric coordinate values and can format
-multiple origin objects in the same paste.
+The input must match that structure exactly, including its spaces and
+punctuation. Coordinates may be negative and may contain a decimal fraction.
+Surrounding whitespace, additional content, alternate spacing, leading `+`
+signs, exponents, and other numeric formats are left unchanged.
 
 ## Development
 
